@@ -36,7 +36,7 @@ Follow these steps to submit a pull request:
 1. Fork the repository
 2. Create a new branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Run tests and linting (`npm test` and `npm run lint`)
+4. Run tests and linting (`./test.sh` and shellcheck)
 5. Commit your changes using a descriptive commit message (following [Conventional Commits](https://www.conventionalcommits.org/) format)
 6. Push to your branch (`git push origin feature/amazing-feature`)
 7. Open a Pull Request
@@ -49,33 +49,68 @@ Follow these steps to submit a pull request:
    cd macos-git-automation
    ```
 
-2. Install dependencies:
+2. Install development dependencies:
    ```bash
-   npm install
+   # Install shellcheck for shell script linting
+   brew install shellcheck
+
+   # Install yamllint for YAML validation
+   brew install yamllint
+
+   # Install pre-commit hooks (optional but recommended)
+   pip install pre-commit
+   pre-commit install
    ```
 
 3. To run tests:
    ```bash
-   npm test
+   # Run unit tests
+   ./test.sh
+
+   # Run E2E tests
+   ./test-e2e.sh
+
+   # Run tests in Docker
+   docker-compose up test
    ```
 
 4. To run linting:
    ```bash
-   npm run lint
+   # Run shellcheck
+   shellcheck -x *.sh dist/*.sh
+
+   # Run yamllint
+   yamllint -d relaxed .github/
+
+   # Run all pre-commit hooks
+   pre-commit run --all-files
    ```
 
 ## Project Structure
 
 ```
 macos-git-automation/
-├── src/
-│   ├── applescript/        # AppleScript implementation
-│   ├── javascript/         # JavaScript (JXA) implementation
-│   └── bash/               # Bash script implementation
-├── tests/                  # Test scripts
-├── original/               # Original script versions
-├── package.json            # Node.js configuration
-└── README.md               # Documentation
+├── dist/                           # Distribution scripts
+│   ├── git-clone-automator.sh     # Bash implementation
+│   ├── GitCloneFromClipboard.applescript  # AppleScript implementation
+│   ├── CloneGitRepoJXA.js         # JavaScript (JXA) implementation
+│   └── CloneGitRepo.workflow      # Automator workflow
+├── .github/
+│   ├── workflows/                 # GitHub Actions workflows
+│   └── dependabot.yml            # Dependabot configuration
+├── install.sh                     # Installation script
+├── test.sh                        # Unit test script
+├── test-e2e.sh                   # End-to-end test script
+├── Jenkinsfile                    # Jenkins pipeline configuration
+├── Dockerfile                     # Docker configuration for testing
+├── docker-compose.yml            # Docker Compose configuration
+├── .pre-commit-config.yaml       # Pre-commit hooks configuration
+├── .editorconfig                 # EditorConfig for code style
+├── README.md                     # Main documentation
+├── README-DOCKER.md              # Docker testing guide
+├── CONTRIBUTING.md               # Contributing guidelines
+├── CHANGELOG.md                  # Change log
+└── LICENSE                       # MIT License
 ```
 
 ## Coding Standards

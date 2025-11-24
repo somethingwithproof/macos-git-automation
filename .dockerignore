@@ -1,0 +1,22 @@
+# Git files
+.git
+.gitignore
+
+# macOS files
+.DS_Store
+*.app
+
+# Build artifacts
+artifacts/
+
+# Test directories
+/tmp/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log

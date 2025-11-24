@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: git-automator-test
+    volumes:
+      - .:/app
+    environment:
+      - CI=true
+    command: ["./test.sh"]
+
+  test-verbose:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: git-automator-test-verbose
+    volumes:
+      - .:/app
+    environment:
+      - CI=true
+    command: ["/bin/bash", "-c", "set -x && ./test.sh"]
+
+  shellcheck:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: git-automator-shellcheck
+    volumes:
+      - .:/app
+    command: ["/bin/bash", "-c", "find . -name '*.sh' -type f -exec shellcheck -x {} \;"]
+
+  lint:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: git-automator-lint
+    volumes:
+      - .:/app
+    command: ["/bin/bash", "-c", "shellcheck -x *.sh && yamllint -d relaxed .github/"]

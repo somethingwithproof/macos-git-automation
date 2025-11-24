@@ -57,6 +57,34 @@ if ! gh auth status &>/dev/null; then
   echo -e "${GREEN}GitHub CLI authenticated successfully.${NC}"
 fi
 
+# Check if dist directory exists
+if [ ! -d "dist" ]; then
+  echo -e "${RED}Error: dist directory not found.${NC}"
+  echo -e "${YELLOW}Please ensure you're running this script from the repository root.${NC}"
+  echo -e "${YELLOW}The dist/ directory should contain:${NC}"
+  echo -e "  - git-clone-automator.sh"
+  echo -e "  - GitCloneFromClipboard.applescript"
+  echo -e "  - CloneGitRepoJXA.js"
+  exit 1
+fi
+
+# Verify required files exist
+REQUIRED_FILES=(
+  "dist/git-clone-automator.sh"
+  "dist/GitCloneFromClipboard.applescript"
+  "dist/CloneGitRepoJXA.js"
+)
+
+for file in "${REQUIRED_FILES[@]}"; do
+  if [ ! -f "$file" ]; then
+    echo -e "${RED}Error: Required file not found: $file${NC}"
+    echo -e "${YELLOW}Please ensure all script files are present in the dist/ directory.${NC}"
+    exit 1
+  fi
+done
+
+echo -e "${GREEN}All required files found.${NC}"
+
 # Create applications directory if it doesn't exist
 APPS_DIR="${HOME}/Applications/GitAutomation"
 mkdir -p "$APPS_DIR"
@@ -67,11 +95,17 @@ cp -f dist/GitCloneFromClipboard.applescript "$APPS_DIR/"
 cp -f dist/CloneGitRepoJXA.js "$APPS_DIR/"
 cp -f dist/git-clone-automator.sh "$APPS_DIR/"
 chmod +x "$APPS_DIR/git-clone-automator.sh"
+chmod +x "$APPS_DIR/CloneGitRepoJXA.js"
 echo -e "${GREEN}Copied scripts to $APPS_DIR${NC}"
 
 # Create AppleScript application
 echo -e "${YELLOW}Creating AppleScript application...${NC}"
-osacompile -o "$APPS_DIR/Git Clone.app" dist/GitCloneFromClipboard.applescript
+if osacompile -o "$APPS_DIR/Git Clone.app" dist/GitCloneFromClipboard.applescript; then
+  echo -e "${GREEN}AppleScript application created successfully.${NC}"
+else
+  echo -e "${RED}Warning: Failed to create AppleScript application.${NC}"
+  echo -e "${YELLOW}You can still use the scripts directly.${NC}"
+fi
 
 # Success message
 echo -e "${GREEN}=== Installation Complete ===${NC}"

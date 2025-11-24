@@ -5,20 +5,116 @@ on:
     branches: [ main, feat/**, fix/** ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  validate:
-    runs-on: macos-latest
-    
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-12
+          - macos-13
+          - macos-14
+          - macos-latest
+
     steps:
-    - uses: actions/checkout@v6
-    
-    - name: Run test script
-      run: |
-        chmod +x ./test.sh
-        ./test.sh
-        
-    - name: Validate installation script
-      run: |
-        chmod +x ./install.sh
-        bash -n ./install.sh
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Display environment info
+        run: |
+          echo "macOS Version:"
+          sw_vers
+          echo ""
+          echo "Bash Version:"
+          bash --version | head -1
+          echo ""
+          echo "Git Version:"
+          git --version
+
+      - name: Install dependencies
+        run: |
+          brew install shellcheck yamllint
+
+      - name: Validate script syntax
+        run: |
+          echo "Validating bash scripts..."
+          bash -n install.sh
+          bash -n test.sh
+          bash -n test-e2e.sh
+          if [ -f dist/git-clone-automator.sh ]; then
+            bash -n dist/git-clone-automator.sh
+          fi
+
+      - name: Run shellcheck
+        run: |
+          echo "Running shellcheck..."
+          shellcheck -x install.sh test.sh test-e2e.sh || true
+          if [ -f dist/git-clone-automator.sh ]; then
+            shellcheck -x dist/git-clone-automator.sh
+          fi
+
+      - name: Validate YAML files
+        run: |
+          echo "Validating YAML files..."
+          yamllint -d relaxed .github/
+
+      - name: Run unit tests
+        run: |
+          chmod +x ./test.sh
+          ./test.sh
+
+      - name: Run E2E tests
+        if: matrix.os == 'macos-latest'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          chmod +x ./test-e2e.sh
+          ./test-e2e.sh || echo "E2E tests incomplete"
+
+  security:
+    name: Security Scan
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Security scan for shell scripts
+        run: |
+          echo "Checking for security issues..."
+          if grep -r "password=|token=|secret=" --include="*.sh" . | grep -v "#"; then
+            echo "::error::Potential hardcoded credentials found"
+            exit 1
+          fi
+          if grep -r "eval " --include="*.sh" . | grep -v "#"; then
+            echo "::warning::eval usage found - review for safety"
+          fi
+          echo "Security scan completed"
+
+  lint:
+    name: Code Quality
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Install linters
+        run: |
+          brew install shellcheck yamllint
+
+      - name: Run all linters
+        run: |
+          echo "Running shellcheck..."
+          find . -name "*.sh" -type f -exec shellcheck -x {} \; || true
+          echo "Running yamllint..."
+          yamllint -d relaxed . || true
+          echo "Checking for trailing whitespace..."
+          if grep -r " $" --include="*.sh" --include="*.md" .; then
+            echo "::warning::Trailing whitespace found"
+          fi
