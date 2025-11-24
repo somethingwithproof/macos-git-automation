@@ -6,8 +6,8 @@ yarn-error.log
 package-lock.json
 yarn.lock
 
-# Distribution directory
-dist/
+# Distribution directory (commented out - we need dist/ files in repo)
+# dist/
 
 # Testing
 coverage/

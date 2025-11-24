@@ -85,18 +85,100 @@ You can also assign keyboard shortcuts to your Automator applications using macO
 
 ## Testing
 
-The scripts have been tested on macOS Ventura with various Git repository URLs.
+The repository includes comprehensive testing:
 
-To run the automated tests:
-
+### Unit Tests
+Run the unit test suite:
 ```bash
 ./test.sh
 ```
 
-This will validate:
-- Bash script syntax
-- Presence of all required files
-- Automator workflow structure
+Tests include:
+- File existence checks
+- Bash script syntax validation
+- Shellcheck linting
+- AppleScript compilation
+- JXA syntax validation
+- Function tests
+- Documentation checks
+
+### End-to-End Tests
+Run E2E tests with actual repository cloning:
+```bash
+./test-e2e.sh
+```
+
+### Docker Testing
+For cross-platform validation:
+```bash
+# Run all tests in Docker
+docker-compose up test
+
+# Run with verbose output
+docker-compose up test-verbose
+
+# Run shellcheck only
+docker-compose up shellcheck
+
+# Run all linters
+docker-compose up lint
+```
+
+See [README-DOCKER.md](README-DOCKER.md) for detailed Docker testing guide.
+
+### Supported macOS Versions
+Tested and supported on:
+- macOS 12 (Monterey)
+- macOS 13 (Ventura)
+- macOS 14 (Sonoma)
+- macOS 15+ (latest)
+
+## CI/CD
+
+### GitHub Actions
+The repository uses GitHub Actions for continuous integration:
+- Matrix testing across multiple macOS versions
+- Automated syntax validation
+- Shellcheck linting
+- E2E testing
+- Security scanning
+- Code quality checks
+
+### Jenkins
+A Jenkinsfile is included for Jenkins pipelines:
+```bash
+# The pipeline includes:
+# - Environment checks
+# - Syntax validation
+# - Linting (shellcheck, yamllint)
+# - Unit tests
+# - Integration tests
+# - Security scanning
+# - Build artifacts
+```
+
+## Development
+
+### Pre-commit Hooks
+Install pre-commit hooks for code quality:
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+The hooks run:
+- Trailing whitespace removal
+- End-of-file fixer
+- YAML validation
+- Shellcheck
+- EditorConfig checks
+- Private key detection
+
+### Code Quality Tools
+- **shellcheck**: Shell script static analysis
+- **yamllint**: YAML file validation
+- **pre-commit**: Git hook management
+- **EditorConfig**: Consistent coding style
 
 ## License
 
